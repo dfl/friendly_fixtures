@@ -1,28 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + "/helper")
-
-class FixturesDependenciesTest < Test::Unit::TestCase
-  self.fixture_path = File.dirname(__FILE__) + "/fixtures/yaml"
-  self.use_instantiated_fixtures = false
-
-  fixtures :monkeys, :dependencies => true
-
-  def test_parent_fixture_was_loaded
-    assert monkeys(:george)
-  end
-  
-  def test_dependencies_were_loaded
-    assert fruits(:apple)
-    assert pirates(:redbeard)
-  end  
-  
-end
-
-
-class FixturesValidationTest < Test::Unit::TestCase  
-  self.fixture_path = File.dirname(__FILE__) + "/fixtures/yaml"
-  self.use_instantiated_fixtures = false
-
-
+class ValidationTest < Test::Unit::TestCase  
   fixtures :monkeys, :dependencies => false, :validate => true
 
   def test_validation_test_was_created
