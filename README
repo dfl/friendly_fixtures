@@ -2,6 +2,7 @@ FriendlyFixtures
 ================
 
 This plugin is a simple extension to add some cool features to the fixtures macro in Test::Unit.
+It is intended for Rails 2.0, but works with 1.2.3 as well.
 
 It enables you to:
 * load dependent models, which are found by object introspection on a model's ActiveRecord associations.
