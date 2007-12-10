@@ -6,14 +6,15 @@ class FixturesDependenciesTest < Test::Unit::TestCase
 
   fixtures :monkeys, :dependencies => true
 
-  def test_dependencies_were_loaded__fruits
-    assert fruits(:apple)
+  def test_parent_fixture_was_loaded
+    assert monkeys(:george)
   end
-
-  def test_dependencies_were_loaded__pirates
+  
+  def test_dependencies_were_loaded
+    assert fruits(:apple)
     assert pirates(:redbeard)
   end  
-
+  
 end
 
 
@@ -43,11 +44,6 @@ class FixturesValidationTest < Test::Unit::TestCase
   def test_dependencies_were_not_loaded__fruits
     assert_raises NoMethodError do
       assert fruits(:apple)
-    end
-  end
-
-  def test_dependencies_were_not_loaded__pirates
-    assert_raises NoMethodError do
       assert pirates(:redbeard)
     end
   end
