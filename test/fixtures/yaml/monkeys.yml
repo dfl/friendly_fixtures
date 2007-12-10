@@ -1,0 +1,10 @@
+george:
+  id: 1
+  name: "Curious George"
+
+louis:
+  id: 2
+  name: "King Louis"
+
+invalid:
+  id: 3

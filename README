@@ -1,0 +1,14 @@
+FriendlyFixtures
+================
+
+This plugin is a simple extension to add some cool features to the fixtures macro in Test::Unit.
+
+It enables you to:
+* load dependent models, which are found by object introspection on a model's ActiveRecord associations.
+* assert that all the loaded fixtures are valid. This can be very helpful in finding bugs.
+
+== Example Usage:
+
+class SomeTest < Test::Unit::TestCase
+  fixtures :user, :dependencies => true, :validate => true
+end

@@ -1,0 +1,11 @@
+blackbeard:
+  id: 1
+  catchphrase: "Yar."
+  monkey_id: 1
+
+redbeard:
+  id: 2
+  catchphrase: "Avast!"
+  monkey_id: 2
+  created_on: <%= 2.weeks.ago.to_s(:db) %>
+  updated_on: <%= 2.weeks.ago.to_s(:db) %>
