@@ -39,7 +39,7 @@ module Test #:nodoc:
 
       end
 
-      # this nastiness is required so that if active_record/fixtures gets loaded after the plugin (during the test suite),
+      # this nastiness is required so that when active_record/fixtures gets loaded after the plugin (during the test suite),
       # the desired behavior will not be clobbered. The idea came from the foxy_fixtures plugin.
       def self.singleton_method_added(method)
         if method == :fixtures
