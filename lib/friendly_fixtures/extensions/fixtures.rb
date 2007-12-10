@@ -2,9 +2,8 @@ module Test #:nodoc:
   module Unit #:nodoc:
     class TestCase #:nodoc:
 
-      def self.fixtures(*table_names)
-
-        if table_names.first == :all
+      def self.fixtures_with_friendliness(*table_names)
+        if table_names.first == :all          # from Rails 2.0
           table_names = Dir["#{fixture_path}/*.yml"] + Dir["#{fixture_path}/*.csv"]
           table_names.map! { |f| File.basename(f).split('.')[0..-2].join('.') }
         else
@@ -39,6 +38,20 @@ module Test #:nodoc:
         setup_fixture_accessors(table_names)
 
       end
+
+      # this nastiness is required so that if active_record/fixtures gets loaded after the plugin (during the test suite),
+      # the desired behavior will not be clobbered. The idea came from the foxy_fixtures plugin.
+      def self.singleton_method_added(method)
+        if method == :fixtures
+          class << self
+            unless method_defined?(:fixtures_without_friendliness)
+              alias_method_chain :fixtures, :friendliness
+              self.class_eval{ alias_method :fixtures, :fixtures_with_friendliness }
+            end
+          end
+        end
+      end
+   
     end
   end
 end
