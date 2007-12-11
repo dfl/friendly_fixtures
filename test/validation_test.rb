@@ -8,7 +8,6 @@ class ValidationTest < Test::Unit::TestCase
   alias_method :validation_test, :test_all_monkeys_are_valid
   undef_method :test_all_monkeys_are_valid 
 
-
   def test_validation_test_fails_with_bad_fixtures
     begin
       validation_test

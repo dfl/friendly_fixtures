@@ -13,7 +13,7 @@ module Test #:nodoc:
               table_names.map! do |table|
                 model_name   = table.to_s.classify
                 model_class  = model_name.constantize
-                dependencies = model_class.reflect_on_all_associations.map(&:class_name).map(&:tableize)
+                dependencies = model_class.reflect_on_all_associations.reject{|a| a.options[:polymorphic]}.map(&:class_name).map(&:tableize)
                 dependencies << table
               end.flatten!.uniq!
             end
