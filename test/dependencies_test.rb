@@ -10,6 +10,11 @@ class DependenciesTest < Test::Unit::TestCase
   def test_dependencies_were_loaded
     assert fruits(:apple)
     assert pirates(:redbeard)
-  end  
+  end
+  
+  def test_polymoprhic_dependencies_were_not_loaded
+    # TODO ?
+  end
+  
   
 end

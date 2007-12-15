@@ -5,7 +5,7 @@ It is intended for Rails 2.0, but works with 1.2.3 as well.
 
 It enables you to:
 * load dependent models, which are found by object introspection on a model's ActiveRecord associations.
-* assert that all the loaded fixtures are valid. This can be very helpful in finding bugs.
+* assert that all the loaded fixtures are valid. Intended to be used in our model tests, this can be very helpful in finding bugs.
 
 == Example Usage:
 
