@@ -1,5 +1,13 @@
 class ValidationTest < Test::Unit::TestCase  
-  fixtures :monkeys, :dependencies => false, :validate => true
+
+  # this statement is the crux of this test
+  fixtures :monkeys, :validate => true #,:dependencies => false (implied)
+
+  def test_accessor_method
+    assert respond_to?( :monkeys )
+    assert !respond_to?( :fruits )
+    assert !respond_to?( :pirates )
+  end
 
   def test_validation_test_was_created
     assert respond_to?( :validation_test )
@@ -7,7 +15,6 @@ class ValidationTest < Test::Unit::TestCase
   
   alias_method :validation_test, :test_all_monkeys_are_valid
   undef_method :test_all_monkeys_are_valid 
-
   def test_validation_test_fails_with_bad_fixtures
     begin
       validation_test
@@ -16,11 +23,5 @@ class ValidationTest < Test::Unit::TestCase
     end
   end
 
-  def test_dependencies_were_not_loaded__fruits
-    assert_raises NoMethodError do
-      assert fruits(:apple)
-      assert pirates(:redbeard)
-    end
-  end
-
+  
 end
