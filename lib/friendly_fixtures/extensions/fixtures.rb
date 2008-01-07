@@ -2,27 +2,44 @@ module Test #:nodoc:
   module Unit #:nodoc:
     class TestCase #:nodoc:
 
-      def self.fixtures_with_friendliness(*table_names)
-        opts = table_names.last.is_a?(Hash) ? table_names.pop : {}
-        if table_names.first == :all          # from Rails 2.0
-          table_names = Dir["#{fixture_path}/*.yml"] + Dir["#{fixture_path}/*.csv"]
-          table_names.map! { |f| File.basename(f).split('.')[0..-2].join('.') }
-        end        
-        if opts[:dependencies]
-          table_names.map! do |table|
-            model_name   = table.to_s.classify
-            model_class  = model_name.constantize
-            dependencies = model_class.reflect_on_all_associations.reject{|a| a.options[:polymorphic]}.map(&:class_name).map(&:tableize)
-            dependencies << table
-          end.flatten!.uniq!
-        end
 
+      def self.table_name_to_associations( table )
+        model_name   = table.to_s.classify
+        model_class  = model_name.constantize
+        model_class.reflect_on_all_associations
+      end
+    
+      def self.fixtures_with_friendliness(*table_args)
+        opts = table_args.last.is_a?(Hash) ? table_args.pop : {}
+
+        all_fixtures = Dir[ "#{fixture_path}/*.yml", "#{fixture_path}/*.csv" ].map! { |f| File.basename(f).split('.')[0..-2].join('.') }
+        
+        if table_args.first == :all          # from Rails 2.0
+          table_names = table_args = all_fixtures
+        elsif opts[:dependencies]
+          table_names = table_args.map { |table|
+            polymorphic, singular = table_name_to_associations( table ).partition{ |a| a.options[:polymorphic] }
+            dependencies = singular.map(&:class_name).map(&:tableize) # convert class to table name
+            unless polymorphic.empty?
+              polymorphic_names = polymorphic.map(&:name)
+              # puts "polymorpmhic: #{polymorphic_names.inspect}"
+              dependencies << all_fixtures.select do |m|  # find all models with a polymorphic belongs to on this name
+                table_name_to_associations( m ).select { |a| polymorphic_names.include?( a.options[:as] ) }.any?
+              end
+            end
+            dependencies << table # don't forget the parent object
+          }.flatten.uniq
+        else
+          table_names = table_args
+        end
+        
         table_names = table_names.map(&:to_s) # convert all symbols to strings
+        # puts "table_names: #{table_names.inspect}"
         
         if opts[:validate]
           validations = case opts[:validate]
           when true
-            table_names.first.to_a
+            table_args
           when :all
             table_names
           else            
@@ -37,6 +54,10 @@ module Test #:nodoc:
               #{model_name}.find(:all).each do |obj|
                 assert obj.valid?, obj.to_yaml
               end
+            rescue Exception => e
+              puts e.inspect
+              puts "you have an invalid object in table #{table}, and for some unknown reason YAML could not be written to stdout"
+              puts "ensure that your validations (validates_presence_of) refers to a foreign key and not an association" if e.is_a?(TypeError) && e.message = "wrong argument type nil (expected Data)"
             end
             RUBY
           end
