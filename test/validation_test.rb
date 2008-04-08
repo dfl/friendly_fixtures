@@ -1,3 +1,5 @@
+require File.expand_path(File.dirname(__FILE__) + "/helper")
+
 class ValidationTest < Test::Unit::TestCase  
 
   # this statement is the crux of this test
