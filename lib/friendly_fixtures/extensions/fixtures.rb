@@ -1,7 +1,7 @@
 
 # add the magic label stuff
 
-class Fixtures < YAML::Omap
+class Fixtures < (RUBY_VERSION < '1.9' ? YAML::Omap : Hash)
 
   # example use:  $LABEL.titleize.downcase
   def interpolate_magic_label string, label
@@ -45,7 +45,11 @@ class Fixtures < YAML::Omap
     now = now.to_s(:db)
 
     # allow a standard key to be used for doing defaults in YAML
-    delete(assoc("DEFAULTS"))
+    if is_a?(Hash)
+      delete('DEFAULTS')
+    else
+      delete(assoc('DEFAULTS'))
+    end
 
     # track any join tables we need to insert later
     habtm_fixtures = Hash.new do |h, habtm|
@@ -65,7 +69,6 @@ class Fixtures < YAML::Omap
 
         # interpolate the fixture label
         row.each do |key, value|
-          # row[key] = label if value == "$LABEL"   #OLD
           row[key] = interpolate_magic_label( value, label ) if value =~ /\$LABEL/  #NEW
         end
 
@@ -76,11 +79,11 @@ class Fixtures < YAML::Omap
 
         # If STI is used, find the correct subclass for association reflection
         reflection_class =
-        if row.include?(inheritance_column_name)
-          row[inheritance_column_name].constantize rescue model_class
-        else
-          model_class
-        end
+          if row.include?(inheritance_column_name)
+            row[inheritance_column_name].constantize rescue model_class
+          else
+            model_class
+          end
 
         reflection_class.reflect_on_all_associations.each do |association|
           case association.macro
@@ -91,7 +94,6 @@ class Fixtures < YAML::Omap
             if association.name.to_s != fk_name && value = row.delete(association.name.to_s)
               if association.options[:polymorphic]
                 if value.sub!(/\s*\(([^\)]*)\)\s*$/, "")
-                  #                  target_type = $1  # OLD
                   target_type = interpolate_magic_label($1, label ) #NEW
                   target_type_name = (association.options[:foreign_type] || "#{association.name}_type").to_s
 
@@ -126,49 +128,5 @@ class Fixtures < YAML::Omap
         fixture.insert_fixtures
       end
     end
-
-  def read_fixture_files
-    if File.file?(yaml_file_path)
-      # YAML fixtures
-      begin
-        yaml_string = ""
-        Dir["#{@fixture_path}/**/*.yml"].select {|f| test(?f,f) }.each do |subfixture_path|
-          yaml_string << IO.read(subfixture_path)
-        end
-        yaml_string << IO.read(yaml_file_path)
-
-        if yaml = YAML::load(erb_render(yaml_string))
-          yaml = yaml.value if yaml.respond_to?(:type_id) and yaml.respond_to?(:value)
-          yaml.each do |name, data|
-            self[name] = Fixture.new(data, @class_name)
-          end
-        end
-      rescue Exception=>boom
-        raise Fixture::FormatError, "a YAML error occured parsing #{yaml_file_path}. Please note that YAML must be consistently indented using spaces. Tabs are not allowed. Please have a look at http://www.yaml.org/faq.html\nThe exact error was:\n  #{boom.class}: #{boom}"
-      end
-    elsif File.file?(csv_file_path)
-      # CSV fixtures
-      reader = CSV::Reader.create(erb_render(IO.read(csv_file_path)))
-      header = reader.shift
-      i = 0
-      reader.each do |row|
-        data = {}
-        # INTERNAUT: Modified the following line for nil values and removed the puts
-        row.each_with_index { |cell, j| data[header[j].to_s.strip] = cell.nil? ? cell : cell.to_s.strip }
-        self["#{Inflector::underscore(@class_name)}_#{i+=1}"]= Fixture.new(data, @class_name)
-      end
-    elsif File.file?(deprecated_yaml_file_path)
-      raise Fixture::FormatError, ".yml extension required: rename #{deprecated_yaml_file_path} to #{yaml_file_path}"
-    else
-      # Standard fixtures
-      Dir.entries(@fixture_path).each do |file|
-        path = File.join(@fixture_path, file)
-        if File.file?(path) and file !~ @file_filter
-          self[file] = Fixture.new(path, @class_name)
-        end
-      end
-    end
-    
-  end
 
 end
