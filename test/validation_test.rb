@@ -21,7 +21,7 @@ class ValidationTest < Test::Unit::TestCase
     begin
       validation_test
     rescue Test::Unit::AssertionFailedError => e
-      assert_match /id: "3".+can't be blank/m, e.message
+      assert_match /Name can't be blank\n\{\"name\"=>nil/, e.message
     end
   end
 
